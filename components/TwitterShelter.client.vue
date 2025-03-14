@@ -15,7 +15,7 @@ const { status, data, send, open, close } = useWebSocket(socketUrl, {
     },
   },
   heartbeat: {
-    message: JSON.stringify({ name: 'system', body: 'ping' }),
+    message: JSON.stringify({ type: 'heartbeat', name: 'system', body: 'ping' }),
     interval: 1000,
     pongTimeout: 10000,
   },
@@ -33,9 +33,32 @@ const messages: {
   body: string;
 }[] = reactive([]);
 
+// 参加者リストを管理
+const userCount = ref(0);
+const userList = ref<string[]>([]);
+
 watch(data, (newValue) => {
-  const { name = 'system', body = '' } = JSON.parse(newValue);
-  messages.push({ name, body });
+  const messageData = JSON.parse(newValue);
+  
+  // 参加者リストの更新メッセージの場合
+  if (messageData.type === 'userList') {
+    userCount.value = messageData.userCount;
+    userList.value = messageData.users;
+    return;
+  }
+  
+  // 通常のチャットメッセージの場合
+  if (messageData.type === 'chatMessage') {
+    const { name = 'system', body = '' } = messageData;
+    messages.push({ name, body });
+    return;
+  }
+  
+  // 古い形式のメッセージ（後方互換性のため）
+  if (!messageData.type) {
+    const { name = 'system', body = '' } = messageData;
+    messages.push({ name, body });
+  }
 });
 
 // 新しいメッセージの入力内容
@@ -50,13 +73,19 @@ const joinChat = () => {
   // 参加後は、名前入力フォームは非表示になり、チャット画面が表示されます
   isLoggedIn.value = true;
   open();
-  send(JSON.stringify({ name: 'system', body: `${userName.value} さんが入室しました` }));
+  send(JSON.stringify({ 
+    type: 'enter',
+    name: 'system', 
+    body: `${userName.value} さんが入室しました`,
+    userName: userName.value
+  }));
 };
 
 // メッセージ送信時の処理：利用者名とメッセージ内容を JSON 化して送信
 const sendMessage = () => {
   if (!newMessage.value.trim() || status.value !== 'OPEN') return;
   const payload = JSON.stringify({
+    type: 'chatMessage',
     name: userName.value,
     body: newMessage.value,
   });
@@ -83,6 +112,17 @@ onUnmounted(() => {
     <!-- ログインした場合は、チャット画面を表示 -->
     <div v-else>
       <p>ようこそ、{{ userName }} さん！Twitterが早く直るといいですね</p>
+      
+      <!-- 参加者リスト表示エリア -->
+      <div class="user-list-container">
+        <h3>参加者 ({{ userCount }}人)</h3>
+        <div class="user-list">
+          <span v-for="(user, index) in userList" :key="index" class="user-badge">
+            {{ user }}
+          </span>
+        </div>
+      </div>
+      
       <div class="chat-window">
         <div v-for="(msg, index) in messages" :key="index" class="message">
           <strong>{{ msg.name }}</strong>: {{ msg.body }}
@@ -123,5 +163,22 @@ input {
 }
 button {
   padding: 0.5rem 1rem;
+}
+.user-list-container {
+  margin-bottom: 1rem;
+  border: 1px solid #eee;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+.user-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.user-badge {
+  background-color: #f0f0f0;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.9rem;
 }
 </style>
