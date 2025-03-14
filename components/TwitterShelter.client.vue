@@ -44,6 +44,40 @@ const messages: {
 const userCount = ref(0);
 const userList = ref<string[]>([]);
 
+// チャットウィンドウの参照
+const chatWindowRef = ref<HTMLElement | null>(null);
+
+// 自動スクロールするかどうかのフラグ
+const shouldAutoScroll = ref(true);
+
+// スクロールイベントハンドラ
+const handleScroll = () => {
+  if (!chatWindowRef.value) return;
+  
+  const { scrollTop, scrollHeight, clientHeight } = chatWindowRef.value;
+  // 下端から20px以内ならば自動スクロールを有効にする
+  shouldAutoScroll.value = scrollHeight - scrollTop - clientHeight < 20;
+};
+
+// スクロールを一番下に移動する関数
+const scrollToBottom = () => {
+  if (chatWindowRef.value && shouldAutoScroll.value) {
+    nextTick(() => {
+      chatWindowRef.value!.scrollTop = chatWindowRef.value!.scrollHeight;
+    });
+  }
+};
+
+// 強制的にスクロールを一番下に移動する関数
+const forceScrollToBottom = () => {
+  if (chatWindowRef.value) {
+    nextTick(() => {
+      chatWindowRef.value!.scrollTop = chatWindowRef.value!.scrollHeight;
+      shouldAutoScroll.value = true;
+    });
+  }
+};
+
 // メッセージを受信したときの処理
 watch(data, (newValue) => {
   const messageData = JSON.parse(newValue);
@@ -59,6 +93,9 @@ watch(data, (newValue) => {
   if (messageData.type === 'chatMessage') {
     const { name = 'system', body = '' } = messageData;
     messages.push({ name, body });
+    
+    // メッセージが追加されたらスクロールを一番下に移動
+    scrollToBottom();
     return;
   }
 });
@@ -87,7 +124,15 @@ const sendMessage = () => {
   });
   send(payload);
   newMessage.value = '';
+  
+  // 自分のメッセージを送信した後は強制的にスクロールを一番下に移動
+  forceScrollToBottom();
 };
+
+// コンポーネントがマウントされたときにスクロールを一番下に移動
+onMounted(() => {
+  forceScrollToBottom();
+});
 
 onUnmounted(() => {
   close();
@@ -119,9 +164,12 @@ onUnmounted(() => {
         </div>
       </div>
       
-      <div class="chat-window">
+      <div ref="chatWindowRef" class="chat-window" @scroll="handleScroll">
         <div v-for="(msg, index) in messages" :key="index" class="message" :class="{ 'system-message': msg.name === 'system', 'user-message': msg.name === userName }">
           <strong>{{ msg.name }}</strong>: {{ msg.body }}
+        </div>
+        <div v-if="!shouldAutoScroll" class="scroll-to-bottom" @click="forceScrollToBottom">
+          <span>↓ 新しいメッセージ</span>
         </div>
       </div>
       <form @submit.prevent="sendMessage" class="message-form">
@@ -176,6 +224,7 @@ h1 {
   margin-bottom: 1rem;
   border-radius: 8px;
   background-color: #f9f9f9;
+  position: relative;
 }
 
 .message {
@@ -195,6 +244,29 @@ h1 {
 .user-message {
   background-color: #e8f5fe;
   text-align: right;
+}
+
+.scroll-to-bottom {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background-color: #1da1f2;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  animation: bounce 1s infinite alternate;
+  z-index: 10;
+}
+
+@keyframes bounce {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-5px);
+  }
 }
 
 form {
@@ -295,6 +367,13 @@ button:hover {
   .message-form button {
     width: auto;
     min-width: 80px;
+  }
+  
+  .scroll-to-bottom {
+    bottom: 10px;
+    right: 10px;
+    padding: 6px 10px;
+    font-size: 0.8rem;
   }
 }
 
