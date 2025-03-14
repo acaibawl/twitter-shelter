@@ -27,3 +27,9 @@ useHead({
     <TwitterShelter />
   </div>
 </template>
+
+<style>
+body {
+  font-family: 'Noto Sans JP', Meiryo, sans-serif;
+}
+</style>
