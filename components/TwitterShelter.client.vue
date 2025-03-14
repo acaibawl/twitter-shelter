@@ -98,7 +98,7 @@ onUnmounted(() => {
   <div class="chat-container">
     <h1>Twitter避難所</h1>
     <!-- 未ログインの場合は、名前入力フォームを表示 -->
-    <div v-if="!isLoggedIn">
+    <div v-if="!isLoggedIn" class="login-container">
       <form @submit.prevent="joinChat">
         <input v-model="userName" placeholder="あなたの名前を入力してください">
         <button type="submit">チャットに参加</button>
@@ -106,8 +106,8 @@ onUnmounted(() => {
     </div>
 
     <!-- ログインした場合は、チャット画面を表示 -->
-    <div v-else>
-      <p>ようこそ、{{ userName }} さん！Twitterが早く直るといいですね</p>
+    <div v-else class="chat-content">
+      <p class="welcome-message">ようこそ、{{ userName }} さん！Twitterが早く直るといいですね</p>
       
       <!-- 参加者リスト表示エリア -->
       <div class="user-list-container">
@@ -120,11 +120,11 @@ onUnmounted(() => {
       </div>
       
       <div class="chat-window">
-        <div v-for="(msg, index) in messages" :key="index" class="message">
+        <div v-for="(msg, index) in messages" :key="index" class="message" :class="{ 'system-message': msg.name === 'system', 'user-message': msg.name === userName }">
           <strong>{{ msg.name }}</strong>: {{ msg.body }}
         </div>
       </div>
-      <form @submit.prevent="sendMessage">
+      <form @submit.prevent="sendMessage" class="message-form">
         <input v-model="newMessage" placeholder="メッセージを入力...">
         <button type="submit">送信</button>
       </form>
@@ -137,44 +137,186 @@ onUnmounted(() => {
   max-width: 800px;
   margin: 0 auto;
   padding: 1rem;
+  width: 100%;
+  box-sizing: border-box;
 }
+
+h1 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.welcome-message {
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #1da1f2;
+  font-weight: bold;
+}
+
+.login-container {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  border-radius: 8px;
+  background-color: #f5f8fa;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.chat-content {
+  display: flex;
+  flex-direction: column;
+}
+
 .chat-window {
   border: 1px solid #ccc;
   padding: 1rem;
   height: 300px;
   overflow-y: auto;
   margin-bottom: 1rem;
+  border-radius: 8px;
+  background-color: #f9f9f9;
 }
+
 .message {
   margin-bottom: 0.5rem;
+  word-break: break-word;
+  padding: 0.5rem;
+  border-radius: 4px;
+  background-color: #fff;
 }
+
+.system-message {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.user-message {
+  background-color: #e8f5fe;
+  text-align: right;
+}
+
 form {
   display: flex;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
 }
+
+.message-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
 input {
   flex: 1;
   padding: 0.5rem;
   margin-right: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  min-width: 200px;
 }
+
 button {
   padding: 0.5rem 1rem;
+  background-color: #1da1f2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
+
+button:hover {
+  background-color: #0c85d0;
+}
+
 .user-list-container {
   margin-bottom: 1rem;
   border: 1px solid #eee;
   padding: 0.5rem;
   border-radius: 4px;
+  background-color: #f5f8fa;
 }
+
 .user-list {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+
 .user-badge {
-  background-color: #f0f0f0;
+  background-color: #e1e8ed;
   padding: 0.25rem 0.5rem;
   border-radius: 1rem;
   font-size: 0.9rem;
+  display: inline-block;
+  margin-bottom: 0.25rem;
+}
+
+/* レスポンシブ対応のためのメディアクエリ */
+@media (max-width: 768px) {
+  .chat-container {
+    padding: 0.5rem;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+  }
+  
+  .chat-window {
+    height: 250px;
+    padding: 0.5rem;
+  }
+  
+  form {
+    flex-direction: column;
+  }
+  
+  .message-form {
+    flex-direction: row;
+  }
+  
+  input {
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .message-form input {
+    margin-bottom: 0;
+  }
+  
+  button {
+    width: 100%;
+  }
+  
+  .message-form button {
+    width: auto;
+    min-width: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.2rem;
+  }
+  
+  .user-list-container h3 {
+    font-size: 1rem;
+  }
+  
+  .user-badge {
+    font-size: 0.8rem;
+  }
+  
+  .message {
+    font-size: 0.9rem;
+  }
+  
+  .welcome-message {
+    font-size: 0.9rem;
+  }
 }
 </style>
