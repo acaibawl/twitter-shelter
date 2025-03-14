@@ -18,9 +18,16 @@ const { status, data, send, open, close } = useWebSocket(socketUrl, {
     message: JSON.stringify({ type: 'heartbeat', name: 'system', body: 'ping' }),
     interval: 1000,
     pongTimeout: 10000,
+    responseMessage: JSON.stringify({ type: 'heartbeat', name: 'system', body: 'pong' }),
   },
   immediate: false,
   autoConnect: false,
+  onConnected: () => {
+    send(JSON.stringify({ 
+      type: 'enter',
+      userName: userName.value
+    }));
+  },
 });
 
 // 利用者の名前を格納する変数
@@ -37,6 +44,7 @@ const messages: {
 const userCount = ref(0);
 const userList = ref<string[]>([]);
 
+// メッセージを受信したときの処理
 watch(data, (newValue) => {
   const messageData = JSON.parse(newValue);
   
@@ -53,12 +61,6 @@ watch(data, (newValue) => {
     messages.push({ name, body });
     return;
   }
-  
-  // 古い形式のメッセージ（後方互換性のため）
-  if (!messageData.type) {
-    const { name = 'system', body = '' } = messageData;
-    messages.push({ name, body });
-  }
 });
 
 // 新しいメッセージの入力内容
@@ -73,12 +75,6 @@ const joinChat = () => {
   // 参加後は、名前入力フォームは非表示になり、チャット画面が表示されます
   isLoggedIn.value = true;
   open();
-  send(JSON.stringify({ 
-    type: 'enter',
-    name: 'system', 
-    body: `${userName.value} さんが入室しました`,
-    userName: userName.value
-  }));
 };
 
 // メッセージ送信時の処理：利用者名とメッセージ内容を JSON 化して送信

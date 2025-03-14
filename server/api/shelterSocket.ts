@@ -29,6 +29,12 @@ export default defineWebSocketHandler({
     const { type = '', name = 'system', body = '' } = messageData;
     // ハートビートメッセージの場合
     if (type === 'heartbeat') {
+      // peer.send({ user: "server", message: "pong" });
+      peer.send(JSON.stringify({ 
+        type: 'heartbeat',
+        name: 'system', 
+        body: 'pong'
+      }));
       return;
     }
     // 入室メッセージの場合
@@ -61,6 +67,7 @@ export default defineWebSocketHandler({
           body 
         }));
       });
+      return;
     }
   },
   close(peer: Peer) {
