@@ -2,35 +2,25 @@
 const runtimeConfig = useRuntimeConfig();
 const ogImageUrl = `${runtimeConfig.public.baseUrl}/twitter-shelter.webp`;
 
-// ダークモード設定
-const isDarkMode = ref(false);
-
-// ローカルストレージからダークモード設定を読み込む
-onMounted(() => {
-  if (process.client) {
-    const savedMode = localStorage.getItem('darkMode');
-    isDarkMode.value = savedMode === 'true';
-    applyDarkMode();
-  }
+// ダークモードcookieを使用するための設定
+const isDarkModeCookie = useCookie<boolean>('darkMode', {
+  maxAge: 60 * 60 * 24 * 365, // 1年間有効
+  path: '/',
+  sameSite: 'lax'
 });
 
 // ダークモードを切り替える関数
 const toggleDarkMode = () => {
-  isDarkMode.value = !isDarkMode.value;
-  if (process.client) {
-    localStorage.setItem('darkMode', isDarkMode.value.toString());
-  }
+  isDarkModeCookie.value = !isDarkModeCookie.value;
   applyDarkMode();
 };
 
 // ダークモードを適用する関数
 const applyDarkMode = () => {
-  if (process.client) {
-    if (isDarkMode.value) {
-      document.documentElement.classList.add('dark-mode');
-    } else {
-      document.documentElement.classList.remove('dark-mode');
-    }
+  if (isDarkModeCookie.value) {
+    document.documentElement.classList.add('dark-mode');
+  } else {
+    document.documentElement.classList.remove('dark-mode');
   }
 };
 
@@ -52,7 +42,13 @@ useHead({
   title: 'Twitter避難所',
   htmlAttrs: {
     lang: 'ja',
-  },
+    class: isDarkModeCookie.value ? 'dark-mode' : ''
+  }
+});
+
+// クライアントサイドでのダークモード適用
+onMounted(() => {
+  applyDarkMode();
 });
 </script>
 
@@ -60,7 +56,7 @@ useHead({
   <div>
     <div class="theme-toggle">
       <button @click="toggleDarkMode" class="theme-toggle-button">
-        <span v-if="isDarkMode">🌞</span>
+        <span v-if="isDarkModeCookie">🌞</span>
         <span v-else>🌙</span>
       </button>
     </div>
