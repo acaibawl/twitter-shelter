@@ -187,18 +187,21 @@ onUnmounted(() => {
   padding: 1rem;
   width: 100%;
   box-sizing: border-box;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 h1 {
   font-size: 1.8rem;
   margin-bottom: 1rem;
   text-align: center;
+  color: var(--primary-color);
 }
 
 .welcome-message {
   text-align: center;
   margin-bottom: 1rem;
-  color: #1da1f2;
+  color: var(--primary-color);
   font-weight: bold;
 }
 
@@ -207,8 +210,9 @@ h1 {
   margin: 2rem auto;
   padding: 1.5rem;
   border-radius: 8px;
-  background-color: #f5f8fa;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background-color: var(--container-bg);
+  box-shadow: 0 2px 10px var(--shadow-color);
+  border: 1px solid var(--border-color);
 }
 
 .chat-content {
@@ -217,13 +221,13 @@ h1 {
 }
 
 .chat-window {
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   padding: 1rem;
   height: 300px;
   overflow-y: auto;
   margin-bottom: 1rem;
   border-radius: 8px;
-  background-color: #f9f9f9;
+  background-color: var(--chat-bg);
   position: relative;
 }
 
@@ -232,30 +236,32 @@ h1 {
   word-break: break-word;
   padding: 0.5rem;
   border-radius: 4px;
-  background-color: #fff;
+  background-color: var(--message-bg);
+  border: 1px solid var(--border-color);
 }
 
 .system-message {
-  background-color: #f8f9fa;
-  color: #6c757d;
+  background-color: var(--system-message-bg);
+  color: var(--system-message-color);
   font-style: italic;
 }
 
 .user-message {
-  background-color: #e8f5fe;
+  background-color: var(--user-message-bg);
   text-align: right;
+  color: var(--text-color);
 }
 
 .scroll-to-bottom {
   position: absolute;
   bottom: 20px;
   right: 20px;
-  background-color: #1da1f2;
+  background-color: var(--primary-color);
   color: white;
   padding: 8px 12px;
   border-radius: 20px;
   cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 5px var(--shadow-color);
   animation: bounce 1s infinite alternate;
   z-index: 10;
 }
@@ -285,13 +291,15 @@ input {
   padding: 0.5rem;
   margin-right: 0.5rem;
   border-radius: 4px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   min-width: 200px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 button {
   padding: 0.5rem 1rem;
-  background-color: #1da1f2;
+  background-color: var(--primary-color);
   color: white;
   border: none;
   border-radius: 4px;
@@ -300,15 +308,15 @@ button {
 }
 
 button:hover {
-  background-color: #0c85d0;
+  background-color: var(--primary-hover);
 }
 
 .user-list-container {
   margin-bottom: 1rem;
-  border: 1px solid #eee;
+  border: 1px solid var(--border-color);
   padding: 0.5rem;
   border-radius: 4px;
-  background-color: #f5f8fa;
+  background-color: var(--container-bg);
 }
 
 .user-list {
@@ -318,12 +326,26 @@ button:hover {
 }
 
 .user-badge {
-  background-color: #e1e8ed;
+  background-color: var(--user-badge-bg);
   padding: 0.25rem 0.5rem;
   border-radius: 1rem;
   font-size: 0.9rem;
   display: inline-block;
   margin-bottom: 0.25rem;
+}
+
+/* スクロールバーのスタイル */
+.chat-window::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-window::-webkit-scrollbar-track {
+  background: var(--chat-bg);
+}
+
+.chat-window::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+  border-radius: 4px;
 }
 
 /* レスポンシブ対応のためのメディアクエリ */
